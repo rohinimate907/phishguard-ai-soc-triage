@@ -49,24 +49,35 @@ PhishGuard maps incoming threats directly to standard cyber defense taxonomies:
 
 The pipeline processes raw email content through parallel feature extraction tracks before unified inference:
 
-[Raw Email / MIME Stream]
-│
-├───► Track A: NLP Processing
-│        └── Sublinear TF-IDF (1-2 N-Grams, 5000 Features) ──┐
-│                                                             ▼
-└───► Track B: Cybersecurity Heuristics Extractor       [Feature Stacking]
-├── Direct IPv4 Link Detection                  (scipy.sparse.hstack)
-├── Hyperlink Pattern Extraction                     │
-├── Urgency & Social Engineering Heuristics          ▼
-├── Financial / Credential Harvesting Cues     [Regularized Classifier]
-├── Capitalization Ratio Analysis               (Logistic Regression L2)
-└── StandardScaler Normalization ────────────────────┤
-▼
-[Triage Engine Output]
-├── Threat Verdict & Score
-├── XAI Token Attribution
-├── Defanged IOC Feed
-└── SIEM Incident JSON
+```mermaid
+flowchart TD
+    A[Raw Email / MIME Stream] --> B[Track A: NLP Vectorization]
+    A --> C[Track B: Security Heuristics]
+
+    subgraph NLP_Pipeline [NLP Feature Extraction]
+        B --> B1[Sublinear TF-IDF]
+        B1 --> B2[N-Grams 1-2 | 5000 Features]
+    end
+
+    subgraph Heuristic_Pipeline [Cybersecurity Heuristics]
+        C --> C1[Direct IPv4 Target Check]
+        C --> C2[Hyperlink Pattern Counter]
+        C --> C3[Urgency & Coercion Regex]
+        C --> C4[Financial / Harvesting Cues]
+        C --> C5[Capitalization Ratio]
+        C1 & C2 & C3 & C4 & C5 --> C6[StandardScaler Normalization]
+    end
+
+    B2 & C6 --> D[Feature Stacking: scipy.sparse.hstack]
+    D --> E[L2-Regularized Logistic Regression]
+
+    subgraph Output_Engine [Triage Engine Output]
+        E --> F1[Threat Classification & Risk Score]
+        E --> F2[XAI Token Attribution Weights]
+        E --> F3[Defanged IOC Stream: hxxp://]
+        E --> F4[SIEM Incident JSON Payload]
+    end
+```
 
 
 ---
